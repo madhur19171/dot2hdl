@@ -60,6 +60,13 @@ public:
 	//The second element of the pair is the input-output mapping of this component and the connected component
 	std::vector<std::pair<Component*, std::pair<int, int>>> io;
 
+//Node0 -> Node1 from out1 to in2
+
+//[<Node1, <1, 2>>]
+
+//Node1:
+//
+
 	//Every entity of top module has clk and rst signal for synchronization
 	std::string clk, rst;
 	//Stores the module port input and output connections, using which

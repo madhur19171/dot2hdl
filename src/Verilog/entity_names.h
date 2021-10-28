@@ -8,6 +8,7 @@
 
 //#define _GLIBCXX_USE_CXX11_ABI 0
 #include <string>
+#include <math.h>
 #include "string_utility.h"
 #include <cstdint>
 #include <iostream>

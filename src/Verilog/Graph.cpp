@@ -36,7 +36,7 @@ Graph::Graph(DotReader dotReader) {
 //			DFS(root);
 //		}
 //	}
-//}
+//
 
 
 void Graph::DFS(Component* v, short level, short outPort, short* arr){

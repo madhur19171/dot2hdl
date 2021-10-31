@@ -20,7 +20,8 @@ GraphToVerilog::GraphToVerilog(std::string filen){
 	std::cout <<"Generating DFS" << std::endl;
 
 	Graph graph(dotReader);
-	graph.generateForwardingTable();
+		graph.generateForwardingTable();
+//	graph.startBFS();
 
 	verilogCode = "";
 	tabs = "";

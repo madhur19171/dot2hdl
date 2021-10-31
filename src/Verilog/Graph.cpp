@@ -110,11 +110,56 @@ std::string Graph::generateComponentForwardingTable(Component* v, int N){
 	return ret;
 }
 
+
+//Generates forwarding table for Component v
+std::string Graph::generateComponentForwardingTableBFS(Component* v, int N){
+	std::string ret = "";
+
+	short entrySize = ceil(log2(v->out.size));
+
+	initializeDFS();
+	BFS(v, pred_dist);
+
+	std::cout << "Decimal: ";
+
+	for(int i = N - 1; i >= 0; i--){//N - 2 for DFS
+		int forwardingPort = getForwardingPort(v, dotReader.getComponentList()[i],pred_dist);
+		std::cout << forwardingPort << " ";
+		ret += (i == N - 1 ? "" : "_") + decToBinary(forwardingPort, entrySize);
+	}
+	std::cout << endl;
+	return ret;
+}
+
+int Graph::getForwardingPort(Component* src, Component* dest, std::map<Component*, std::pair<Component*, int>> &pred_dist)
+{
+	int ret = 0;
+	// vector path stores the shortest path
+	vector<Component*> path;
+	Component* crawl = dest;
+	path.push_back(crawl);
+	while (pred_dist[crawl].first != NULL) {
+		path.push_back(pred_dist[crawl].first);
+		crawl = pred_dist[crawl].first;
+	}
+
+	if(path.size() != 1){
+		for(auto it = (src->io).begin(); it != (src->io).end(); it++)
+			if(((*it).first) == path[path.size() - 2])
+				ret = (*it).second.first;
+
+	}
+
+	return ret;
+}
+
+
+
 //Generates Forwarding Table for all Router Components.
 void Graph::generateForwardingTable(){
 
 	for(auto it = dotReader.getComponentList().begin(); it != dotReader.getComponentList().end(); it++){
-		std::string str = generateComponentForwardingTable(*it, dotReader.getComponentList().size());//Assuming that all components are Routers
+		std::string str = generateComponentForwardingTableBFS(*it, dotReader.getComponentList().size());//Assuming that all components are Routers
 
 		std::string file_n = (*it)->name;
 		std::ofstream outStream(file_n);
@@ -144,7 +189,7 @@ std::string Graph::decToBinary(short n, short size)
 // a modified version of BFS that stores predecessor
 // of each vertex in array p
 // and its distance from source in array d
-bool Graph::BFS(Component* src, int N, std::map<Component*, std::pair<Component*, int>> pred_dist)
+bool Graph::BFS(Component* src, std::map<Component*, std::pair<Component*, int>> &pred_dist)
 {
 	// a queue to maintain queue of vertices whose
 	// adjacency list is to be scanned as per normal
@@ -163,6 +208,7 @@ bool Graph::BFS(Component* src, int N, std::map<Component*, std::pair<Component*
 	// dist[i] for all i set to infinity
 
 	for(auto it = dotReader.getComponentList().begin(); it != dotReader.getComponentList().end(); it++){
+		pred_dist.clear();//Empty the map before starting BFS
 		std::pair<Component*, int> pair;
 		pair.first = NULL;
 		pair.second = -1;
@@ -172,19 +218,24 @@ bool Graph::BFS(Component* src, int N, std::map<Component*, std::pair<Component*
 	// now source is first to be visited and
 	// distance from source to itself should be 0
 	visited[src->name] = true;
-	pred_dist[src];
+	pred_dist[src] = {NULL, 0};
 	queue.push_back(src);
 
 	// standard BFS algorithm
 	while (!queue.empty()) {
-		int u = queue.front();
+		Component* u = queue.front();
 		queue.pop_front();
-		for (int i = 0; i < adj[u].size(); i++) {
-			if (visited[adj[u][i]] == false) {
-				visited[adj[u][i]] = true;
-				dist[adj[u][i]] = dist[u] + 1;
-				pred[adj[u][i]] = u;
-				queue.push_back(adj[u][i]);
+		std::cout << u->name << ", ";
+		for (auto it = (u->io).begin(); it != (u->io).end(); it++) {
+			if (visited[((*it).first)->name] == false) {
+				visited[((*it).first)->name] = true;
+
+				pred_dist[((*it).first)].first = u;
+				pred_dist[((*it).first)].second = pred_dist[u].second + 1;
+
+				queue.push_back((*it).first);
+
+				std::cout << (*it).first->name << ", ";
 
 				// We stop BFS when we find
 				// destination.
@@ -192,45 +243,58 @@ bool Graph::BFS(Component* src, int N, std::map<Component*, std::pair<Component*
 				//                    return true;
 			}
 		}
+		std::cout << std::endl;
 	}
 
-	return false;
+	return true;
 }
 
 // utility function to print the shortest distance
 // between source vertex and destination vertex
-void Graph::printShortestDistance(vector<int> adj[], int s,
-		int dest, int v)
+void Graph::printShortestDistance(Component* src, Component* dest, std::map<Component*, std::pair<Component*, int>> &pred_dist)
 {
-	// predecessor[i] array stores predecessor of
-	// i and distance array stores distance of i
-	// from s
-	int pred[v], dist[v];
 
-	if (BFS(adj, s, dest, v, pred, dist) == false) {
-		cout << "Given source and destination"
-				<< " are not connected";
-		return;
-	}
-
+	std::cout << "Source: " << src->name << "\tDest: " << dest->name << std::endl;
 	// vector path stores the shortest path
-	vector<int> path;
-	int crawl = dest;
+	vector<Component*> path;
+	Component* crawl = dest;
 	path.push_back(crawl);
-	while (pred[crawl] != -1) {
-		path.push_back(pred[crawl]);
-		crawl = pred[crawl];
+	while (pred_dist[crawl].first != NULL) {
+		path.push_back(pred_dist[crawl].first);
+		crawl = pred_dist[crawl].first;
 	}
 
 	// distance from source is in distance array
-	cout << "Shortest path length is : "
-			<< dist[dest];
+	cout << "Shortest path length is : " << pred_dist[dest].second << std::endl;
 
 	// printing path from source to destination
-	cout << "\nPath is::\n";
+	cout << "Path is::\n";
 	for (int i = path.size() - 1; i >= 0; i--)
-		cout << path[i] << " ";
+		cout << path[i]->name << " ";
+	std::cout << std::endl;
 }
+
+
+void Graph::startBFS(){
+	for(auto it = dotReader.getComponentList().begin(); it != dotReader.getComponentList().end(); it++){
+		Component* src = *it;
+		BFS(src, pred_dist);
+		for(auto jt = dotReader.getComponentList().begin(); jt != dotReader.getComponentList().end(); jt++){
+			if(*jt != *it)
+				printShortestDistance(src, *jt, pred_dist);
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
 
 
 

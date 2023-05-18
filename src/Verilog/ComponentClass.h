@@ -38,6 +38,7 @@ class Component{
 public:
 	//Index is new and has to be added to all subclass constructors
 	int index;
+	int ID;
 	std::string moduleName;
 	std::string instanceName;
 	std::string name;
@@ -52,6 +53,8 @@ public:
 	bool transparent;
 	std::string op;
 	uint64_t value;
+
+	std::string nonStandardAttribute;
 
 	/**Confirm this assumption*/ //=========>>> Assumption wrong for StoreComponent.
 	//Assuming that two different blocks have only one unique connection between them
@@ -770,6 +773,23 @@ public:
 	//Of the components it is connected to
 	std::string getInputOutputConnections();
 private:
+
+	struct RouterNSA
+	{
+		/* data */
+		int typeWidth;
+		int flitPerPacket;
+		int HFBDepth;
+		int fifoDepth;
+		int VC;
+		int *flowControl;	// TODO: Currently, there is no support for parsing VC Flow control
+							// It is still not clear what format to be used to encode this data
+							// So parsing it will be left to future work when the format is decided
+
+	} routerNSA;
+
+	void parseRouterNSA();
+
 	std::string getVerilogParameters();
 	int getClusterSize();//This function finds the size of NoC cluster.
 	//This is to support Clustered NoC where different NoC clusters connected together have different Topology

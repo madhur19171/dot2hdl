@@ -94,6 +94,8 @@ typedef struct node
     string  storePorts;
     int  fifodepth;
     int constants;
+
+    string nonStandardAttributes;   // For storing extra attributes other than the standard ones that are very specific to some special components
 } NODE_T;
 
 void printNode(NODE_T nodes);

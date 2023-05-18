@@ -26,7 +26,7 @@
 #include <stdlib.h>     /* exit, EXIT_FAILURE */
 
 #include "dot2hdl.h"
-#include "../VHDL/string_utils.h"
+#include "string_utils.h"
 
 using namespace std;
 
@@ -54,6 +54,9 @@ void printNode(NODE_T node){
 			<< "\tBBCount: " << node.bbcount
 			<< "\tBBID: " << node.bbId
 			<< "\tPort ID: " << node.portId;
+
+	if(node.nonStandardAttributes != "")
+		cout << "Non Standard Attributes: " << node.nonStandardAttributes << endl;
 
 	cout << "\n\nIn Size: " << node.inputs.size;
 	for(int i = 0; i < node.inputs.size; i++){
@@ -252,6 +255,14 @@ int get_component_constants ( string parameters )
 
 	string type = get_value ( parameters );
 	return stoi_p( type );
+}
+
+string get_component_nonStandardAttributes ( string parameters )
+{
+	parameters = string_clean_retain_space( parameters );
+
+	string nonStandardAttributes = get_value ( parameters );
+	return nonStandardAttributes;
 }
 
 vector<vector<int>> get_component_orderings(string parameter){
@@ -730,6 +741,9 @@ void parse_components ( string v_0, string v_1 )
 					lsqs_in_netlist++;
 				}
 			}
+			if( parameter.find("NSA=") != std::string::npos){	// For storing extra attributes other than the standard ones that are very specific to some special components
+				nodes[components_in_netlist].nonStandardAttributes = get_component_nonStandardAttributes (parameters[indx]);
+			}
 			if ( parameter.find("in=") != std::string::npos )
 			{
 				//cout << " nodes " << nodes[components_in_netlist].name << endl;
@@ -876,7 +890,7 @@ void parse_components ( string v_0, string v_1 )
 			{
 				nodes[components_in_netlist].bbId = get_component_bbId( parameters[indx] );
 			}
-			if ( parameter.find("ID") != std::string::npos )
+			if ( parameter.find("ID=") != std::string::npos && parameter.find("bbID=") == std::string::npos )
 			{
 				nodes[components_in_netlist].node_id = get_component_node_id( parameters[indx] );
 			}
@@ -1000,8 +1014,11 @@ void parse_line ( string line )
 	if ( v.size() > 0 )
 	{
 		int line_type = check_line ( line );
-		if ( line_type == COMPONENT_DESCRIPTION_LINE )
+		if ( line_type == COMPONENT_DESCRIPTION_LINE && line.find("bbID") != string::npos)	// Assuming that every component description will have bbID	
+																							// This hack is needed because some other attributes of 
+																							// graphViz like node [shape = rectangle].... will be treated as components
 		{
+			std::cout << line << std::endl;
 			parse_components ( v[0], v[1] );
 		}
 		else if ( line_type == COMPONENT_CONNECTION_LINE ) //is a connection line

@@ -7,9 +7,15 @@
 
 #include "ComponentClass.h"
 
+// Note: Since ID attribute in the dot file is taken as the INDEX of the router,
+// it is necessary to first instantiate all the routers from ID 0 to N - 1 and then proceed to
+// create the rest of the modules.
+// Otherwise just use a routing algorithm that can take care of non continuous indices
+
 //Subclass for Entry type component
 RouterComponent::RouterComponent(Component& c){
 	index = c.index;
+	ID = c.ID;
 	moduleName = "Router";
 	name = c.name;
 	instanceName = moduleName + "_" + name;
@@ -24,6 +30,7 @@ RouterComponent::RouterComponent(Component& c){
 	slots = c.slots;
 	transparent = c.transparent;
 	value = c.value;
+	nonStandardAttribute = c.nonStandardAttribute;
 	io = c.io;
 	inputConnections = c.inputConnections;
 	outputConnections = c.outputConnections;
@@ -61,13 +68,21 @@ std::string RouterComponent::getModuleIODeclaration(std::string tabs){
 
 std::string RouterComponent::getVerilogParameters(){
 	std::string ret;
+	parseRouterNSA();
 	//This method of generating module parameters will work because Start node has
 	//only 1 input and 1 output
-	ret += "#(.N(" + std::to_string(getClusterSize()) + "), .INDEX(" + std::to_string(nodes[index].node_id) + "), .INPUTS(" + std::to_string(in.size) + "), .OUTPUTS(" + std::to_string(out.size) + "), ";
+	ret += "#(.N(" + std::to_string(getClusterSize()) + "), ";
+	ret += ".INDEX(" + std::to_string(nodes[index].node_id) + "), ";
+	ret += ".VC(" + std::to_string(routerNSA.VC) + "), ";
+	ret += ".INPUTS(" + std::to_string(in.size) + "), ";
+	ret += ".OUTPUTS(" + std::to_string(out.size) + "), ";
 	ret += ".DATA_WIDTH(" + std::to_string(in.input[0].bit_size == 0 ? 1 : in.input[0].bit_size) + "), ";
-	ret += ".TYPE_WIDTH(2), .REQUEST_WIDTH($clog2(" + std::to_string(out.size) + ")), ";
-	ret += ".FlitPerPacket(6), .PhitPerFlit(1), ";
-	ret += ".FIFO_DEPTH(" + std::to_string(nodes[index].fifodepth) + ")) ";
+	ret += ".TYPE_WIDTH(" + std::to_string(routerNSA.typeWidth) + "), ";
+	ret += ".REQUEST_WIDTH($clog2(" + std::to_string(out.size) + ")), ";
+	ret += ".FlitPerPacket(" + std::to_string(routerNSA.flitPerPacket) + "), ";
+	ret += ".HFB_DEPTH(" + std::to_string(routerNSA.HFBDepth) + ") ";
+	ret += ".FIFO_DEPTH(" + std::to_string(routerNSA.fifoDepth) + ") ";
+	ret += ".VC_FLOW_CONTROL(" + std::to_string(0) + ")) ";
 	//0 data size will lead to negative port length in verilog code. So 0 data size has to be made 1.
 	return ret;
 }
@@ -116,7 +131,41 @@ int RouterComponent::getClusterSize(){
 }
 
 
+void RouterComponent::parseRouterNSA(){
+	std::stringstream ss;
 
+	ss << nonStandardAttribute;
+
+	std::string attribute;
+	std::string key;
+	int value;
+	std::cout << "ID: " << this->index << ":\t";
+	while(!ss.eof()){
+		ss >> attribute;
+		key = attribute.substr(0, attribute.find(":"));
+		value = std::stoi(attribute.substr(attribute.find(":") + 1));
+
+		// std::cout << "Attribute: "<< attribute << "\tKey: " << key << "\tValue: " << value << std::endl;
+
+		if(key == "VC"){
+			routerNSA.VC = value;
+		}
+		if(key == "TYPE_WIDTH"){
+			routerNSA.typeWidth = value;
+		}
+		if(key == "FlitPerPacket"){
+			routerNSA.flitPerPacket = value;
+		}
+		if(key == "HFBDepth"){
+			routerNSA.HFBDepth = value;
+		}
+		if(key == "FIFO_DEPTH"){
+			routerNSA.fifoDepth = value;
+		}
+		if(key == "VC_FLOW_CONTROL"){
+		}
+	}
+}
 
 
 

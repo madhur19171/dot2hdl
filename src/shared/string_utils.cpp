@@ -61,7 +61,17 @@ string string_clean ( string string_input )
 
 }
 
+string string_clean_retain_space ( string string_input )  // Won't remove the spaces in the string
+{
+    string_input.erase( remove( string_input.begin(), string_input.end(), '\t' ), string_input.end() );
 
+    string_input.erase( remove( string_input.begin(), string_input.end(), '"' ), string_input.end() );
+    string_input.erase( remove( string_input.begin(), string_input.end(), ']' ), string_input.end() );
+    string_input.erase( remove( string_input.begin(), string_input.end(), ';' ), string_input.end() );
+        
+    return string_input;
+
+}
 
 
 string stripExtension( string string_input, string extension )

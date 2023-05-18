@@ -197,6 +197,7 @@ static std::vector<std::pair<std::string, int>> allFloatingPointComponents =
 #define DEFAULT_TRANSPARENT false
 #define DEFAULT_OP "nop"
 #define DEFAULT_VALUE 0
+#define DEFAULT_NSA "noNSA"
 
 #define SIGNAL_STRING  "signal "
 #define STD_LOGIC      "std_logic;"

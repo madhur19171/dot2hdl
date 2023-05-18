@@ -22,6 +22,7 @@ using namespace std;
 void string_split(const string& s, char c, vector<string>& v);
 string string_remove_blank ( string string_input );
 string string_clean ( string string_input );
+string string_clean_retain_space ( string string_input );  // Won't remove the spaces in the string
 int stoi_p ( string str );
 string string_constant ( unsigned long int value , int size );
 string clean_entity ( string filename );

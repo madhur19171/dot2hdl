@@ -21,6 +21,7 @@ Component::Component(){
 	transparent = DEFAULT_TRANSPARENT;
 	op = DEFAULT_OP;
 	value = DEFAULT_VALUE;
+	nonStandardAttribute = DEFAULT_NSA;
 }
 
 //Prints data about a component
@@ -35,6 +36,7 @@ void Component::printComponent(){
 			<< "slots: " << slots << "\t"
 			<< "transparent: " << transparent << "\t"
 			<< "value: " << value << "\t"
+			<< "NSA: " << nonStandardAttribute << "\t"
 			<< "IO Size: " << io.size() << std::endl;
 }
 

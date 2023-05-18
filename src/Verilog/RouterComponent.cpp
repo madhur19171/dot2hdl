@@ -80,8 +80,8 @@ std::string RouterComponent::getVerilogParameters(){
 	ret += ".TYPE_WIDTH(" + std::to_string(routerNSA.typeWidth) + "), ";
 	ret += ".REQUEST_WIDTH($clog2(" + std::to_string(out.size) + ")), ";
 	ret += ".FlitPerPacket(" + std::to_string(routerNSA.flitPerPacket) + "), ";
-	ret += ".HFB_DEPTH(" + std::to_string(routerNSA.HFBDepth) + ") ";
-	ret += ".FIFO_DEPTH(" + std::to_string(routerNSA.fifoDepth) + ") ";
+	ret += ".HFBDepth(" + std::to_string(routerNSA.HFBDepth) + "), ";
+	ret += ".FIFO_DEPTH(" + std::to_string(routerNSA.fifoDepth) + "), ";
 	ret += ".VC_FLOW_CONTROL(" + std::to_string(0) + ")) ";
 	//0 data size will lead to negative port length in verilog code. So 0 data size has to be made 1.
 	return ret;

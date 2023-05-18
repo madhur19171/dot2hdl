@@ -4,9 +4,11 @@ CFLAGS=
 CPPFLAGS=-O3 -g -Wall -static -fpermissive
 LDFLAGS=
 
-SRC_DIR	:=	src
-BIN_DIR	:=	bin
-BUILD_DIR	:=	build
+DOT2HDL_DIR	:=	$(NOXYGEN_HOME)/dot2hdl
+
+SRC_DIR	:=	$(DOT2HDL_DIR)/src
+BIN_DIR	:=	$(DOT2HDL_DIR)/bin
+BUILD_DIR	:=	$(DOT2HDL_DIR)/build
 
 SOURCES	:=	$(shell find $(SRC_DIR) -name "*.cpp")	# Finds all C++ Sources
 BPRINTER_DIR	:=	$(shell find $(SRC_DIR) -name "*bprinter")
